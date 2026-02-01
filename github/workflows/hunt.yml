@@ -1,0 +1,34 @@
+name: OMEGA-PRIME Hunt
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'    # Every 30 minutes
+  workflow_dispatch:         # Manual trigger
+
+jobs:
+  hunt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install feedparser pandas requests
+
+      - name: Run OMEGA-PRIME
+        env:
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID:   ${{ secrets.TG_CHAT_ID }}
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: python omega_prime.py
+
+      - name: Commit results
+        run: |
+          git pull --rebase
+          python omega_prime.py  # second run to commit
